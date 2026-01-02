@@ -8,8 +8,9 @@ import * as winston from 'winston';
       imports: [ConfigModule], // supaya ConfigService siap dipakai
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const isProd =
-          config.get<string>('NODE_ENV', 'development') === 'production';
+        const env = config.get<string>('app.env') ?? 'development';
+        const appName = config.get<string>('app.name') ?? 'my-nest-app';
+        const isProd = env === 'production';
 
         return {
           level: isProd ? 'info' : 'debug',
@@ -36,7 +37,7 @@ import * as winston from 'winston';
             }),
           ],
           defaultMeta: {
-            service: config.get<string>('APP_NAME') ?? 'my-nest-app',
+            service: {appName},
           },
         };
       },

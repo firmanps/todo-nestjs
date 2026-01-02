@@ -5,14 +5,18 @@ import { AppService } from './app.service';
 import { LoggingModule } from './common/logging/logging.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { PrismaService } from './common/prisma/prisma.service';
+import configuration from './config/configuration';
+import { envValidationSchema } from './config/env.validation';
 import { TodoModule } from './modules/todo/todo.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    //manggil env itu harus dari service bagusnya
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      load: [configuration],
+      validationSchema: envValidationSchema,
     }),
     LoggingModule,
     PrismaModule,
