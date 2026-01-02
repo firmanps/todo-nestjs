@@ -21,9 +21,9 @@ export class CreateTodoDto {
 
   @IsEnum(TodoStatus)
   @IsOptional()
-  status?: TodoStatus; // default di DB: TODO
+  status?: TodoStatus;
 
   @IsUUID()
-  @IsOptional()
-  userId?: string; 
+  @IsNotEmpty()
+  userId: string;
 }

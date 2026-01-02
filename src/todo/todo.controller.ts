@@ -4,10 +4,13 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { QueryTodoDto } from './dto/query-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoService } from './todo.service';
 
@@ -20,23 +23,28 @@ export class TodoController {
     return this.todoService.create(createTodoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.todoService.findAll();
+  @Get('/:userId')
+  findTodoByUserId(
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+    @Query() query: QueryTodoDto,
+  ) {
+    return this.todoService.findTodoByUserId(userId, query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.todoService.findOne(+id);
+  @Patch('/:todoId/user/:userId')
+  update(
+    @Param('todoId', new ParseUUIDPipe()) todoId: string,
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+    @Body() updateTodoDto: UpdateTodoDto,
+  ) {
+    return this.todoService.update(todoId, userId, updateTodoDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
-    return this.todoService.update(+id, updateTodoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.todoService.remove(+id);
+  @Delete('/:todoId/user/userId')
+  remove(
+    @Param('todoId', new ParseUUIDPipe()) todoId: string,
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+  ) {
+    return this.todoService.remove(todoId, userId);
   }
 }
