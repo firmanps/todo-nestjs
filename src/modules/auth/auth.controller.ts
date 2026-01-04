@@ -1,11 +1,22 @@
-import { Body, Controller, Delete, Param, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RequestLoginDto } from './dto/login-request.dto';
+import { JwtAuthGuard } from './jwt-cookie/jwt-auth.guard';
 
-@Controller()
+@Controller('/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -34,7 +45,18 @@ export class AuthController {
     return { message: 'Login Sukses' };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async getMe(@Req() req: Request) {
+    return this.authService.getMe(req);
+  }
 
+  // @Get('/debug-cookie')
+  // debug(@Req() req: Request) {
+  //   return {
+  //     cookies: (req as any).cookies,
+  //   };
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

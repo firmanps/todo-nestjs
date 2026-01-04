@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 // pnpm add ms
 // pnpm add -D @types/ms
 import type { StringValue } from 'ms';
+import { JwtStrategy } from './jwt-cookie/jwt.strategy';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import type { StringValue } from 'ms';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

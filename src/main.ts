@@ -1,6 +1,7 @@
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import * as cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { SwaggerSetup } from './common/swagger/swagger.setup';
@@ -14,6 +15,14 @@ async function bootstrap() {
   // ambil config dari ConfigService (hasil dari configuration.ts)
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') ?? 3000;
+  const origin = configService.get('app.origin');
+
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: origin,
+    credentials: true,
+  });
 
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: '/', method: RequestMethod.GET }],
