@@ -10,13 +10,16 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiCreatedResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-cookie/jwt.guard';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoService } from './todo.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('/todo')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
@@ -35,6 +38,11 @@ export class TodoController {
   @Post()
   create(@Body() createTodoDto: CreateTodoDto) {
     return this.todoService.create(createTodoDto);
+  }
+
+  @Get('/test')
+  getTest() {
+    return { message: 'test' };
   }
 
   @HttpCode(HttpStatus.OK)

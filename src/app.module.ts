@@ -6,7 +6,6 @@ import { LoggingModule } from './common/logging/logging.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { PrismaService } from './common/prisma/prisma.service';
 import configuration from './config/configuration';
-import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { TodoModule } from './modules/todo/todo.module';
 
@@ -16,7 +15,6 @@ import { TodoModule } from './modules/todo/todo.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      validationSchema: envValidationSchema,
     }),
     LoggingModule,
     PrismaModule,

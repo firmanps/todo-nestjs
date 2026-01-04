@@ -8,8 +8,8 @@ import * as winston from 'winston';
       imports: [ConfigModule], // supaya ConfigService siap dipakai
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const env = config.get<string>('app.env') ?? 'development';
-        const appName = config.get<string>('app.name') ?? 'my-nest-app';
+        const env = config.getOrThrow('app.env') ?? 'development';
+        const appName = config.getOrThrow('app.name') ?? 'my-nest-app';
         const isProd = env === 'production';
 
         return {

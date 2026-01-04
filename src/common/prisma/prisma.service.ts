@@ -17,7 +17,7 @@ export class PrismaService
 
   constructor(private readonly config: ConfigService) {
     // tidak pakai this karena masih didalam constructor yang dimana otomatis dibuatkan propertinya
-    const dbUrl = config.get<string>('database.url');
+    const dbUrl = config.getOrThrow('database.url');
 
     if (!dbUrl) {
       throw new Error('DATABASE_URL is not defined');

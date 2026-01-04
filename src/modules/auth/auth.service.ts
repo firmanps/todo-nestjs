@@ -10,7 +10,7 @@ import { Request } from 'express';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RequestLoginDto } from './dto/login-request.dto';
-import { RegisterResponse } from './dto/register-response.dto';
+import { RegisterResponse } from './type/register-response.type';
 @Injectable()
 export class AuthService {
   constructor(
@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     const token = await this.jwtService.signAsync({
-      id: user.id,
+      sub: user.id,
       username: user.username,
       email: user.email,
       password: '********',

@@ -14,7 +14,7 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RequestLoginDto } from './dto/login-request.dto';
-import { JwtAuthGuard } from './jwt-cookie/jwt-auth.guard';
+import { JwtAuthGuard } from './jwt-cookie/jwt.guard';
 
 @Controller('/auth')
 export class AuthController {
@@ -36,7 +36,7 @@ export class AuthController {
     const accessToken = await this.authService.login(requestLoginDto);
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: this.config.get('app.NODE_ENV') === 'production', // production wajib true (HTTPS)
+      secure: this.config.getOrThrow('app.env') === 'production', // production wajib true (HTTPS)
       sameSite: 'lax', // aman untuk mayoritas kasus
       maxAge: 15 * 60 * 1000, // 15 menit
       path: '/', // cookie berlaku untuk semua route
