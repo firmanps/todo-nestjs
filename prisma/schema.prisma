@@ -8,9 +8,9 @@ datasource db {
 
 model User {
   id        String       @id @default(uuid())
-  username  String       @unique
-  email     String       @unique //@unique itu harus unik untuk global jadi semua user harus unik
-  password  String
+  username  String       @unique @db.VarChar(30)
+  email     String       @unique @db.VarChar(254) //@unique itu harus unik untuk global jadi semua user harus unik
+  password  String       @db.VarChar(255)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   todos     Todo[]

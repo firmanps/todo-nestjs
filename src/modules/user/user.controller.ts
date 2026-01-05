@@ -13,6 +13,7 @@ import {
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-cookie/jwt.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { JwtPayload } from './type/jwt-payload.type';
 import { UserService } from './user.service';
 
 @UseGuards(JwtAuthGuard)
@@ -20,18 +21,21 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  Me(@Req() req: Request) {
+    const userId = (req.user as JwtPayload).sub;
+    return this.userService.getMe(userId);
+  }
+
   @Patch('/updateprofile')
   updateProfile(
     @Body() updateProfileDto: UpdateProfileDto,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ) {
     return this.userService.updateProfile(req, updateProfileDto);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Get('/getme')
-  async getMe(@Req() req: Request) {
-    return this.userService.getMe(req);
   }
 
   @HttpCode(HttpStatus.OK)

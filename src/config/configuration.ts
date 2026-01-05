@@ -4,6 +4,7 @@ export default () => ({
     port: parseInt(process.env.PORT ?? '3000', 10),
     name: process.env.APP_NAME || 'NestJs API',
     origin: process.env.ORIGIN || 'http://localhost:3000',
+    salt: parseInt(process.env.SALT_ROUNDS || '10', 10),
   },
 
   database: {

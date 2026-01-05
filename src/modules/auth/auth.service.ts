@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
@@ -16,11 +17,12 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private readonly config: ConfigService,
   ) {}
 
   async register(createAuthDto: CreateAuthDto): Promise<RegisterResponse> {
-    const SALT_ROUNDS = 10;
-    const hashed = await bcrypt.hash(createAuthDto.password, SALT_ROUNDS);
+    const saltRounds = this.config.getOrThrow('app.salt');
+    const hashed = await bcrypt.hash(createAuthDto.password, saltRounds);
 
     try {
       const user = await this.prisma.user.create({
@@ -80,8 +82,6 @@ export class AuthService {
     const token = await this.jwtService.signAsync({
       sub: user.id,
       username: user.username,
-      email: user.email,
-      password: '********',
     });
 
     return token;
