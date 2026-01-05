@@ -14,8 +14,8 @@ async function bootstrap() {
 
   // ambil config dari ConfigService (hasil dari configuration.ts)
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('app.port') ?? 3000;
-  const origin = configService.get('app.origin');
+  const port = configService.getOrThrow('app.port') ?? 3000;
+  const origin = configService.getOrThrow('app.origin');
 
   app.use(cookieParser());
 

@@ -32,11 +32,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const accessToken = await this.authService.login(requestLoginDto);
+    const env = this.config.getOrThrow('app.env');
+    const isProd = env === 'production';
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: this.config.getOrThrow('app.env') === 'production', // production wajib true (HTTPS)
-      sameSite: 'lax', // aman untuk mayoritas kasus
-      maxAge: 15 * 60 * 1000, // 15 menit
+      secure: isProd, // production wajib true (HTTPS)
+      sameSite: isProd ? 'none' : 'lax', // aman untuk mayoritas kasus
+      domain: isProd ? this.config.getOrThrow('app.cookie_domain') : undefined,
+      maxAge: 3 * 24 * 60 * 60 * 1000, // 3 hari
       path: '/', // cookie berlaku untuk semua route
     });
 
