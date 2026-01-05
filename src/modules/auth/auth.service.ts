@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { Request } from 'express';
+import { Response } from 'express';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RequestLoginDto } from './dto/login-request.dto';
@@ -87,13 +87,8 @@ export class AuthService {
     return token;
   }
 
-  async getMe(req: Request) {
-    return await {
-      user: req.user,
-    };
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  logout(res: Response) {
+    res.clearCookie('access_token');
+    return { message: 'Logout berhasil' };
   }
 }

@@ -8,6 +8,7 @@ import { PrismaService } from './common/prisma/prisma.service';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { TodoModule } from './modules/todo/todo.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TodoModule } from './modules/todo/todo.module';
     PrismaModule,
     TodoModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

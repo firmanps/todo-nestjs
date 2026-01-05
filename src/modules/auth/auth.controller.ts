@@ -1,20 +1,16 @@
 import {
   Body,
   Controller,
-  Delete,
-  Get,
-  Param,
+  HttpCode,
+  HttpStatus,
   Post,
-  Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RequestLoginDto } from './dto/login-request.dto';
-import { JwtAuthGuard } from './jwt-cookie/jwt.guard';
 
 @Controller('/auth')
 export class AuthController {
@@ -23,11 +19,13 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
+  @HttpCode(HttpStatus.CREATED)
   @Post('/register')
   register(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.register(createAuthDto);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('/login')
   async login(
     @Body() requestLoginDto: RequestLoginDto,
@@ -45,21 +43,9 @@ export class AuthController {
     return { message: 'Login Sukses' };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('/me')
-  async getMe(@Req() req: Request) {
-    return this.authService.getMe(req);
-  }
-
-  // @Get('/debug-cookie')
-  // debug(@Req() req: Request) {
-  //   return {
-  //     cookies: (req as any).cookies,
-  //   };
-  // }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @HttpCode(HttpStatus.OK)
+  @Post('/logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    return this.authService.logout(res);
   }
 }
