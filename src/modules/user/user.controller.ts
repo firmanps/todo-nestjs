@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,12 +9,16 @@ import {
   Patch,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from '../auth/jwt-cookie/jwt.guard';
+import { extname } from 'path';
+import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { JwtPayload } from '../auth/jwt-cookie/jwt-payload.type';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { JwtPayload } from './type/jwt-payload.type';
 import { UserService } from './user.service';
 
 @UseGuards(JwtAuthGuard)
@@ -30,12 +35,45 @@ export class UserController {
   }
 
   @Patch('/updateprofile')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+      fileFilter: (req, image, cb) => {
+        // 1️⃣ cek MIME type (utama)
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowedMimeTypes.includes(image.mimetype)) {
+          cb(
+            new BadRequestException('Format gambar harus JPG, PNG, atau WEBP'),
+            false,
+          );
+          return;
+        }
+
+        // 2️⃣ cek extension (tambahan pengaman)
+        const allowedExt = ['.jpg', '.jpeg', '.png', '.webp'];
+        const ext = extname(image.originalname).toLowerCase();
+
+        if (!allowedExt.includes(ext)) {
+          cb(
+            new BadRequestException('Ekstensi file harus JPG, PNG, atau WEBP'),
+            false,
+          );
+          return;
+        }
+
+        // 3️⃣ lolos semua validasi
+        cb(null, true);
+      },
+    }),
+  )
   updateProfile(
-    @Body() updateProfileDto: UpdateProfileDto,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Body() updateProfileDto: UpdateProfileDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.userService.updateProfile(req, updateProfileDto);
+    const userId = (req.user as JwtPayload).sub;
+    return this.userService.updateProfile(userId, updateProfileDto, file);
   }
 
   @HttpCode(HttpStatus.OK)

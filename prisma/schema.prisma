@@ -20,9 +20,10 @@ model User {
 }
 
 model profileUser {
-  id     String  @id @default(uuid())
-  image  String?
-  userId String  @unique
+  id            String  @id @default(uuid())
+  image         String?
+  imagePublicId String?
+  userId        String  @unique
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiCreatedResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-cookie/jwt.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt.guard';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';

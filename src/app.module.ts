@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 import { LoggingModule } from './common/logging/logging.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { PrismaService } from './common/prisma/prisma.service';
@@ -22,6 +23,7 @@ import { UserModule } from './modules/user/user.module';
     TodoModule,
     AuthModule,
     UserModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

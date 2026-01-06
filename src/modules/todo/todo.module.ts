@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/common/prisma/prisma.module';
-import { JwtAuthGuard } from '../auth/jwt-cookie/jwt.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt.guard';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
 

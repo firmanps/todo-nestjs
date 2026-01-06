@@ -18,4 +18,10 @@ export default () => ({
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   },
+
+  cloudinary: {
+    name: process.env.CLOUDINARY_CLOUD_NAME,
+    apikey: process.env.CLOUDINARY_API_KEY,
+    apisecret: process.env.CLOUDINARY_API_SECRET,
+  },
 });

@@ -3,7 +3,6 @@ import {
   IsEmail,
   IsOptional,
   IsString,
-  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -36,9 +35,9 @@ export class UpdateProfileDto {
   @MaxLength(72)
   password?: string;
 
-  @IsOptional()
-  @Transform(trimOrUndef)
-  @IsString()
-  @Matches(/^https?:\/\/.+/i, { message: 'image harus berupa URL' })
-  image?: string;
+  // @IsOptional()
+  // @Transform(trimOrUndef)
+  // @IsString()
+  // @Matches(/^https?:\/\/.+/i, { message: 'image harus berupa URL' })
+  // image?: string;
 }
