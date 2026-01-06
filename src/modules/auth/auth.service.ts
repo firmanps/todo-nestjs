@@ -30,6 +30,9 @@ export class AuthService {
           username: createAuthDto.username,
           email: createAuthDto.email,
           password: hashed,
+          profile: {
+            create: {},
+          },
         },
         select: { id: true, username: true, email: true },
       });

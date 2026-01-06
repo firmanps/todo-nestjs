@@ -20,10 +20,10 @@ model User {
 }
 
 model profileUser {
-  id            String  @id @default(uuid())
-  image         String?
-  imagePublicId String?
-  userId        String  @unique
+  id            String @id @default(uuid())
+  image         String @default("https://res.cloudinary.com/dbhnbrxjb/image/upload/v1767698082/profile_todo_default_oovtib.png")
+  imagePublicId String @default("avatars/default")
+  userId        String @unique
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
