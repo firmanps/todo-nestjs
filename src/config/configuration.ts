@@ -24,4 +24,8 @@ export default () => ({
     apikey: process.env.CLOUDINARY_API_KEY,
     apisecret: process.env.CLOUDINARY_API_SECRET,
   },
+
+  csrf: {
+    secret: process.env.CSRF_SECRET,
+  },
 });

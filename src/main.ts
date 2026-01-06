@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  RequestMethod,
-  ValidationPipe,
-} from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
-import * as csurf from 'csurf';
+import { randomUUID } from 'crypto';
 import helmet from 'helmet';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
+import { CsrfService } from './common/security/csrf.service';
 import { SwaggerSetup } from './common/swagger/swagger.setup';
 
 async function bootstrap() {
@@ -37,38 +34,28 @@ async function bootstrap() {
   // Cookie parser
   app.use(cookieParser());
 
+  // anon_id cookie (unik per browser)
+  app.use((req, res, next) => {
+    if (!req.cookies?.anon_id) {
+      res.cookie('anon_id', randomUUID(), {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
+        path: '/',
+      });
+    }
+    next();
+  });
+
   // CORS
   app.enableCors({
     origin,
     credentials: true,
   });
 
-  // CSRF middleware (cookie-based)
-  app.use(
-    csurf({
-      cookie: {
-        key: 'csrf_secret',
-        httpOnly: true,
-        secure: isProd,
-        sameSite: isProd ? 'none' : 'lax',
-        path: '/',
-      },
-      value: (req) =>
-        (req.headers['x-csrf-token'] as string) ||
-        (req.headers['x-xsrf-token'] as string) ||
-        '',
-    }),
-  );
-
-  // CSRF error handler
-  app.use((err: any, _req: any, _res: any, next: any) => {
-    if (err?.code === 'EBADCSRFTOKEN') {
-      return next(
-        new BadRequestException('CSRF token tidak valid atau tidak ada'),
-      );
-    }
-    return next(err);
-  });
+  // CSRF
+  const csrfService = app.get(CsrfService);
+  app.use(csrfService.protection());
 
   // Global prefix
   app.setGlobalPrefix('/api/v1', {
