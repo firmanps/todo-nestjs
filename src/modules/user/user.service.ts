@@ -34,12 +34,6 @@ export class UserService {
     });
   }
 
-  async uploadAvatar(file: Express.Multer.File) {
-    const uploaded = await this.cloudinary.uploadImage(file, 'avatars');
-
-    return uploaded;
-  }
-
   async updateProfile(
     userId: string,
     dto: UpdateProfileDto,
@@ -85,7 +79,7 @@ export class UserService {
     let uploaded: { url: string; publicId: string } | null = null;
 
     if (file) {
-      uploaded = await this.cloudinary.uploadImage(file, 'avatars');
+      uploaded = await this.cloudinary.uploadAvatar(file); // ✅ assign, bukan const baru
 
       data.profile = {
         upsert: {
