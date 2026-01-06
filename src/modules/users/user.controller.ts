@@ -34,6 +34,7 @@ export class UserController {
     return this.userService.getMe(userId);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Patch('/updateprofile')
   @UseInterceptors(
     FileInterceptor('image', {

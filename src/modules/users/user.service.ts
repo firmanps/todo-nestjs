@@ -39,47 +39,36 @@ export class UserService {
     dto: UpdateProfileDto,
     file?: Express.Multer.File,
   ) {
+    // 1) validate input
     const hasUpdate =
-      dto.username !== undefined ||
-      dto.email !== undefined ||
-      dto.password !== undefined ||
-      file !== undefined;
-
-    if (!hasUpdate) {
+      Boolean(dto.username ?? dto.email ?? dto.password) || Boolean(file);
+    if (!hasUpdate)
       throw new BadRequestException('Tidak ada data yang akan diupdate');
-    }
 
-    // 1) Ambil data lama (buat tahu publicId lama)
+    // 2) load current state (for old publicId)
     const current = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        profile: {
-          select: { imagePublicId: true },
-        },
-      },
+      select: { profile: { select: { imagePublicId: true } } },
     });
+    if (!current) throw new NotFoundException('User tidak ditemukan');
 
-    if (!current) {
-      throw new NotFoundException('User tidak ditemukan');
-    }
+    const oldPublicId = current.profile?.imagePublicId;
 
-    // 2) Siapkan data update
-    const data: Prisma.UserUpdateInput = {
-      ...(dto.username !== undefined ? { username: dto.username } : {}),
-      ...(dto.email !== undefined ? { email: dto.email } : {}),
-    };
+    // 3) build update data
+    const data: Prisma.UserUpdateInput = {};
+    if (dto.username !== undefined) data.username = dto.username;
+    if (dto.email !== undefined) data.email = dto.email;
 
     if (dto.password !== undefined) {
       const saltRounds = Number(this.config.getOrThrow('app.salt'));
       data.password = await bcrypt.hash(dto.password, saltRounds);
     }
 
-    // 3) Jika ada file, upload dulu (biar kalau gagal, DB tidak berubah)
+    // 4) upload new avatar (optional)
     let uploaded: { url: string; publicId: string } | null = null;
 
     if (file) {
-      uploaded = await this.cloudinary.uploadAvatar(file); // ✅ assign, bukan const baru
+      uploaded = await this.cloudinary.uploadAvatar(file);
 
       data.profile = {
         upsert: {
@@ -89,7 +78,7 @@ export class UserService {
       };
     }
 
-    // 4) Update DB
+    // 5) persist + cleanup
     try {
       const updated = await this.prisma.user.update({
         where: { id: userId },
@@ -102,42 +91,59 @@ export class UserService {
         },
       });
 
-      // 5) Hapus gambar lama SETELAH DB sukses update
-      // (kalau ini gagal, DB tetap benar — paling hanya “sampah” di Cloudinary)
-      const oldPublicId = current.profile?.imagePublicId;
-      if (uploaded && oldPublicId && oldPublicId !== uploaded.publicId) {
-        await this.cloudinary.deleteByPublicId(oldPublicId);
+      // delete old (avoid deleting default / shared asset)
+      if (
+        uploaded &&
+        this.shouldDeleteOldAvatar(oldPublicId, uploaded.publicId)
+      ) {
+        await this.cloudinary.deleteByPublicId(oldPublicId!);
       }
 
       return updated;
     } catch (error) {
-      // Kalau DB gagal tapi sudah upload gambar baru, bersihkan gambar baru supaya tidak numpuk
+      // if DB update fails but upload succeeded => cleanup new uploaded file
       if (uploaded?.publicId) {
         await this.cloudinary
           .deleteByPublicId(uploaded.publicId)
           .catch(() => {});
       }
 
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025')
-          throw new NotFoundException('User tidak ditemukan');
-
-        if (error.code === 'P2002') {
-          const targets = (error.meta?.target as string[] | undefined) ?? [];
-          if (targets.includes('email')) {
-            throw new ConflictException('Email sudah digunakan oleh user lain');
-          }
-          if (targets.includes('username')) {
-            throw new ConflictException(
-              'Username sudah digunakan oleh user lain',
-            );
-          }
-          throw new ConflictException('Data sudah digunakan oleh user lain');
-        }
-      }
-
-      throw new InternalServerErrorException('Gagal mengupdate profile');
+      throw this.mapPrismaOrThrow(error);
     }
+  }
+
+  private shouldDeleteOldAvatar(
+    oldPublicId: string | null | undefined,
+    newPublicId: string,
+  ) {
+    if (!oldPublicId) return false;
+    if (oldPublicId === newPublicId) return false;
+
+    // ✅ penting: jangan hapus default avatar yang dipakai banyak user
+    const DEFAULT_PUBLIC_IDS = new Set(['avatars/default']);
+    if (DEFAULT_PUBLIC_IDS.has(oldPublicId)) return false;
+
+    return true;
+  }
+
+  private mapPrismaOrThrow(error: unknown): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025')
+        throw new NotFoundException('User tidak ditemukan');
+
+      if (error.code === 'P2002') {
+        const targets = (error.meta?.target as string[] | undefined) ?? [];
+        if (targets.includes('email'))
+          throw new ConflictException('Email sudah digunakan oleh user lain');
+        if (targets.includes('username'))
+          throw new ConflictException(
+            'Username sudah digunakan oleh user lain',
+          );
+        throw new ConflictException('Data sudah digunakan oleh user lain');
+      }
+    }
+
+    throw new InternalServerErrorException('Gagal mengupdate profile');
   }
 
   async deleteMe(req: Request, res: Response) {
