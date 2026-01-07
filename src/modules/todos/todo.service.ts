@@ -46,7 +46,6 @@ export class TodoService {
   async getTodo(userId: string, query: QueryTodoDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
-
     const skip = (page - 1) * limit;
 
     const where = {
