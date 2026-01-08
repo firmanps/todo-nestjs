@@ -47,16 +47,28 @@ export class TodoService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
-
+  
+    // optional: rapihin search (trim) + minimal 2 char biar ga spam
+    const search = (query.search ?? "").trim();
+    const hasSearch = search.length >= 2;
+  
     const where = {
       userId,
       ...(query.status ? { status: query.status } : {}),
+      ...(hasSearch
+        ? {
+            title: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          }
+        : {}),
     };
-
+  
     const orderBy = {
-      createdAt: query.sort === 'asc' ? ('asc' as const) : ('desc' as const),
+      createdAt: query.sort === "asc" ? ("asc" as const) : ("desc" as const),
     };
-
+  
     const [data, totalData] = await Promise.all([
       this.prisma.todo.findMany({
         where,
@@ -66,21 +78,23 @@ export class TodoService {
       }),
       this.prisma.todo.count({ where }),
     ]);
-
-    const totalPage = Math.ceil(totalData / limit); // bisa jadi 0 kalau totalData=0
-
+  
+    const totalPage = Math.ceil(totalData / limit);
+  
     return {
       meta: {
         page,
         limit,
         totalData,
         totalPage,
-        sort: query.sort ?? 'desc',
+        sort: query.sort ?? "desc",
         status: query.status ?? null,
+        search: hasSearch ? search : null,
       },
       data,
     };
   }
+  
 
   async getTodoById(userId: string, todoId: string) {
     try {

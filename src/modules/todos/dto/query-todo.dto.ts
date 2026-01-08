@@ -1,6 +1,6 @@
 import { TodoStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class QueryTodoDto {
   @IsOptional()
@@ -15,12 +15,17 @@ export class QueryTodoDto {
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
-  page?: number;
+  page?: number = 1;
 
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
   @Max(100)
-  limit?: number;
+  limit?: number = 10;
+  
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value?.trim())
+  search?: string;
 }

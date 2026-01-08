@@ -6,7 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Patch,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -18,7 +18,6 @@ import { JwtAuthGuard } from '../../common/guards/jwt.guard';
 import { JwtPayload } from '../auth/jwt-cookie/jwt-payload.type';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoService } from './todo.service';
 
 @UseGuards(JwtAuthGuard)
@@ -52,22 +51,14 @@ export class TodoController {
 
   @HttpCode(HttpStatus.OK)
   @Get('/:todoId')
-  getTodoById(@Req() req: Request, @Param('todoId') todoId: string) {
-    const userId = (req.user as JwtPayload).sub;
-    return this.todoService.getTodoById(userId, todoId);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Patch('/:todoId')
-  updateTodo(
+  async getTodoById(
     @Req() req: Request,
-    @Param('todoId') todoId: string,
-    @Body() updateTodoDto: UpdateTodoDto,
+    @Param('todoId', new ParseUUIDPipe()) todoId: string,
   ) {
     const userId = (req.user as JwtPayload).sub;
-    return this.todoService.updateTodo(userId, todoId, updateTodoDto);
-  }
 
+    return this.todoService.getTodoById(userId, todoId);
+  }
   @HttpCode(HttpStatus.OK)
   @Delete('/:todoId')
   deleteTodo(@Req() req: Request, @Param('todoId') todoId: string) {
